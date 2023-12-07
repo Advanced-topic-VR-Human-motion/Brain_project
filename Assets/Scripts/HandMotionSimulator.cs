@@ -8,27 +8,39 @@ using System;
 
 public class HandMotionSimulator : MonoBehaviour
 {
-    float timeToCall;
-    float timeDelay = 0.00005f;
-    const string separator = "\t"; //tab separation string
     public string path; //path to tsv file
-    int index, fileSize; //index to cycle through arrays
-    bool readyToUpdate;
-    public Button start;
-    bool simulationStarted = false;
-    bool pause = false; // if the playing of the recording is to be paused.
-
-    public GameObject[] handMarkers;
+    public GameObject markerContainer;
     public Slider slider;
-    public GameObject player;
+    public Button start;
+    public GameObject StartUI;
+
+
+    private float timeToCall;
+    private float timeDelay = 0.00005f;
+    const string separator = "\t"; //tab separation string
+    private int index, fileSize; //index to cycle through arrays
+    private bool readyToUpdate;
+    private bool simulationStarted = false;
+    private bool pause = false; // if the playing of the recording is to be paused.
+
+    private float markersYOffset = 0.9f;
+
 
     //arrays with data from each row
     private float[] time;
-    private static string[] markerNames = { 
-        "RThumb1", "RThumbTip", "RIndex2", "RIndexTip", "RMiddle2", "RMiddleTip", "RRing2", "RRingTip", "RPinky2", "RPinkyTip",
-        "LThumb1", "LThumbTip", "LIndex2", "LIndexTip", "LMiddle2", "LMiddleTip", "LRing2", "LRingTip", "LPinky2", "LPinkyTip"
-    };
+    // private static string[] markerNames = {
+    //     "RWristOut", "RWristIn", "RHandOut", "RHandIn",
+    //     "RThumb1", "RThumbTip", "RIndex2", "RIndexTip", "RMiddle2", "RMiddleTip", "RRing2", "RRingTip", "RPinky2", "RPinkyTip",
+    //     "LWristOut", "LWristIn", "LHandOut", "LHandIn",
+    //     "LThumb1", "LThumbTip", "LIndex2", "LIndexTip", "LMiddle2", "LMiddleTip", "LRing2", "LRingTip", "LPinky2", "LPinkyTip"
+    // };
 
+    private static string[] markerNames = {
+        "RWristOut", "RWristIn", "RHandOut", "RHandIn",
+        "RThumbTip", "RIndexTip", "RMiddleTip", "RRingTip", "RPinkyTip",
+        "LWristOut", "LWristIn", "LHandOut", "LHandIn",
+        "LThumbTip", "LIndexTip", "LMiddleTip", "LRingTip", "LPinkyTip"
+    };
     private Dictionary<string, float[,]> markersToData = new Dictionary<string, float[,]>();
     private  Dictionary<string, Coordinate> markers; // when data is parsed, it is stored in this array
 
@@ -39,8 +51,7 @@ public class HandMotionSimulator : MonoBehaviour
     void Start()
     {
         start.onClick.AddListener(() => { 
-            simulationStarted = true;
-            //start motion
+            StartSimulation();
         });
 
     }
@@ -50,9 +61,13 @@ public class HandMotionSimulator : MonoBehaviour
         //DEBUG
         if(Input.GetKeyDown(KeyCode.Space))
         {
-            if(!simulationStarted)
-                simulationStarted = true;
+            StartSimulation();
         }
+    }
+
+    public void StartSimulation(){
+        simulationStarted = true;
+        StartUI.SetActive(false);
     }
 
     private void startStream(string filepath)
@@ -107,12 +122,10 @@ public class HandMotionSimulator : MonoBehaviour
         // to pause and restart the process
         if (Input.GetKeyDown(KeyCode.P))
         {
-            if (pause == false) { pause = true; }
-            else { pause = false; }
+            pause = !pause;
         }
 
         //start the simulation
-        // if ((OVRInput.GetDown(OVRInput.Button.Three) || Input.GetKeyDown(KeyCode.Space)) && simulationStarted)
         if(simulationStarted)
         {
                 startStream(path);
@@ -132,12 +145,8 @@ public class HandMotionSimulator : MonoBehaviour
             {
                 GameObject markerGO = GameObject.Find(markername);
                 if(!(markers[markername].x == 0 && markers[markername].y == 0 && markers[markername].z == 0)){
-                    markerGO.GetComponent<Renderer>().enabled = true;
-                    markerGO.transform.localPosition = new Vector3(markers[markername].x, markers[markername].y, markers[markername].z) + 1.5f * Vector3.up;
-                }
-                else{
-                    //make marker invisible
-                    markerGO.GetComponent<Renderer>().enabled = false;
+                    markerGO.transform.localPosition = new Vector3(markers[markername].x, markers[markername].y, markers[markername].z) + Vector3.up * markersYOffset;
+                    markerContainer.transform.rotation = Quaternion.Euler(0, 90, 0);
                 }
             }
             timeToCall = Time.fixedTime + timeDelay;

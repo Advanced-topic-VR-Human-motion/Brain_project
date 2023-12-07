@@ -88,8 +88,8 @@ public class Simulator : MonoBehaviour
     void sceneOver()
     {
         SceneIsOverUI.SetActive(false); ChooseSceneUI.SetActive(true);
-        // if(!isTutorial)
-            // dataManager.endDataRecording();
+        if(!isTutorial)
+            dataManager.endDataRecording();
     }
     private void startStream(string filepath)
     {
@@ -154,33 +154,33 @@ public class Simulator : MonoBehaviour
             Invoke("sceneOver", 10);
 
             loopIndex++;
-            // player.GetComponent<BlurController>().DisableBlur();
+            player.GetComponent<BlurController>().DisableBlur();
             catheder.SetActive(false);
         }
 
-        if (OVRInput.GetDown(OVRInput.Button.Three) && AreyourRedyUI.activeInHierarchy)
+        // if (OVRInput.GetDown(OVRInput.Button.Three) && AreyourRedyUI.activeInHierarchy)
         {
             // if (!isTutorial)
             //     dataManager.startDataRecording(isanimation, applyAverageFilter);
             // player.GetComponent<BlurController>().RecalibrateBlurPosition();
-            if (isanimation)
-            {
-                AreyourRedyUI.SetActive(false);
-                catheterAnimatioon.SetActive(true);
-            }
-            else if (isTutorial)
-            {
-                // dataManager.startTime = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                AreyourRedyUI.SetActive(false);
-                tutorialCatheterAnimation.SetActive(true);
-            }
-            else
-            {
-                AreyourRedyUI.SetActive(false);
-                catheder.SetActive(true);
-                startStream(path);
-                loopIndex = 0;
-            }
+            // if (isanimation)
+            // {
+            //     AreyourRedyUI.SetActive(false);
+            //     catheterAnimatioon.SetActive(true);
+            // }
+            // else if (isTutorial)
+            // {
+            //     dataManager.startTime = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+            //     AreyourRedyUI.SetActive(false);
+            //     tutorialCatheterAnimation.SetActive(true);
+            // }
+            // else
+            // {
+            //     AreyourRedyUI.SetActive(false);
+            //     catheder.SetActive(true);
+            //     startStream(path);
+            //     loopIndex = 0;
+            // }
         }
 
 
