@@ -83,7 +83,7 @@ public class FABRIKChain
 
     public void Forward()
     {
-        
+
         effectors[1].Position = BaseEffector.Position + BaseEffector.Rotation * Vector3.forward * BaseEffector.Length;
 
         for (int i = 2; i < effectors.Count; i++)
@@ -164,6 +164,14 @@ public class FABRIKChain
         get
         {
             return effectors[effectors.Count - 1];
+        }
+    }
+
+    public List<FABRIKEffector> Effectors
+    {
+        get
+        {
+            return effectors;
         }
     }
 }

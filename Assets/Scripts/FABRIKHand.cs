@@ -5,6 +5,9 @@ using System.Collections.Generic;
 public class FABRIKHand: FABRIK
 {
     public Transform [] FingerTips;
+    public GameObject ConnectorPrefab;
+
+    private float connectorScale = 40f;
     //NOTE: constraint is applied with respect to the parent, if the root joint has constraints it doesn't do anything anyways!
 
     /*
@@ -14,12 +17,19 @@ public class FABRIKHand: FABRIK
     - rotations of root joints need to be updated manually as the mocap data does not include those
     */
 
+
+    void Start()
+    {
+        InstantiateConnectors();
+    }
     public override void OnFABRIK ()
     {
-        for(int i = 0 ; i < FingerTips.Length ; i++){
+        int numChains = FingerTips.Length;
+        FABRIKChain [] ends = new FABRIKChain[numChains];
+        for(int i = 0 ; i < numChains ; i++){
             string endEffectorName = "fingertip" + (i+1) + "_end_effector";
-            FABRIKChain chain = GetEndChain(endEffectorName);
-            chain.Target = FingerTips[i].position;
+            ends[i] = GetEndChain(endEffectorName);
+            ends[i].Target = FingerTips[i].position;
         }
 
 
@@ -57,5 +67,31 @@ public class FABRIKHand: FABRIK
         averagePositionCorrected /= numFingerTipsToConsider;
 
         return averagePositionCorrected;
+    }
+
+    private void InstantiateConnectors(){
+        int numChains = FingerTips.Length;
+        
+        //for every child in every chain, instatiate the connector prefab with origin in parent and end of mesh in child
+        for(int i = 0 ; i < numChains ; i++){
+            FABRIKChain chain = GetEndChain("fingertip" + (i+1) + "_end_effector");
+            FABRIKEffector [] effectors = chain.Effectors.ToArray();
+            for(int j = 0 ; j < effectors.Length - 2 ; j++){
+                FABRIKEffector parent = effectors[j];
+                FABRIKEffector child = effectors[j+1];
+                Vector3 origin = parent.transform.position;
+                Vector3 end = child.transform.position;
+                Vector3 direction = end - origin;
+                Vector3 scale = new Vector3(1f, 1f, direction.magnitude * connectorScale);
+                Vector3 position = origin + direction / 2;
+                Quaternion rotation = Quaternion.LookRotation(direction);
+                GameObject connector = Instantiate(ConnectorPrefab);
+                connector.transform.position = position;
+                connector.transform.rotation = rotation;
+                connector.transform.localScale = scale;
+                connector.transform.parent = parent.transform;
+            }
+        }
+
     }
 }
