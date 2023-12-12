@@ -69,6 +69,7 @@ public class FABRIK : MonoBehaviour
     public void Awake()
     {
         // Load our IK system from the root transform
+        //call loadsystem with this as a parent
         rootChain = LoadSystem(transform);
 
         // Inversely sort by layer, greater-first
@@ -109,6 +110,7 @@ public class FABRIK : MonoBehaviour
 
             effectors.Add(effector);
 
+            
             if (transform.childCount != 1)
             {
                 break;

@@ -82,8 +82,8 @@ public class FABRIKChain
     }
 
     public void Forward()
-    {
-
+    {   
+        // Set the base effector's position to the parent's end effector's position
         effectors[1].Position = BaseEffector.Position + BaseEffector.Rotation * Vector3.forward * BaseEffector.Length;
 
         for (int i = 2; i < effectors.Count; i++)
@@ -98,6 +98,7 @@ public class FABRIKChain
         // This is a sub-base, reset Target to zero to be recalculated in Backward
         if (children.Count != 0)
         {
+            Debug.Log(effectors[0].gameObject.name + ": sub-base" + children.Count);
             Target = Vector3.zero;
 
             // In order to constrain a sub-base end effector, we must average the directions of its children
@@ -112,7 +113,7 @@ public class FABRIKChain
 
             EndEffector.ApplyConstraints(direction);
         }
-    }
+}
 
     public void ForwardMulti()
     {
