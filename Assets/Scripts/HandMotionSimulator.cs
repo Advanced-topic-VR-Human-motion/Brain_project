@@ -25,7 +25,6 @@ public class HandMotionSimulator : MonoBehaviour
 
     private float markersYOffset = 0.9f;
 
-
     //arrays with data from each row
     private float[] time;
     // private static string[] markerNames = {
@@ -41,6 +40,8 @@ public class HandMotionSimulator : MonoBehaviour
         "LWristOut", "LWristIn", "LHandOut", "LHandIn",
         "LThumbTip", "LIndexTip", "LMiddleTip", "LRingTip", "LPinkyTip"
     };
+
+    private JointOffset[] jointOffsets;
     private Dictionary<string, float[,]> markersToData = new Dictionary<string, float[,]>();
     private  Dictionary<string, Coordinate> markers; // when data is parsed, it is stored in this array
 
