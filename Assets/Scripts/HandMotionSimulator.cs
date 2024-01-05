@@ -41,7 +41,6 @@ public class HandMotionSimulator : MonoBehaviour
         "LThumbTip", "LIndexTip", "LMiddleTip", "LRingTip", "LPinkyTip"
     };
 
-    private JointOffset[] jointOffsets;
     private Dictionary<string, float[,]> markersToData = new Dictionary<string, float[,]>();
     private  Dictionary<string, Coordinate> markers; // when data is parsed, it is stored in this array
 
@@ -166,14 +165,6 @@ public class HandMotionSimulator : MonoBehaviour
             markers[markername] = coord;
 
         }
-    }
-
-     //function to read the file with recorded MoCap data
-    private StreamReader ReadFile(string path)
-    {
-        StreamReader reader = new StreamReader(path);
-        string line = reader.ReadLine(); //first line = headers
-        return reader;
     }
 
     //function to find the total number of lines in the file being read

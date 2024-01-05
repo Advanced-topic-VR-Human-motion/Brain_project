@@ -1,0 +1,16 @@
+rthumb1 rthumb2 24.8
+rthumb2 RThumbTip 32.14
+rindex1 rindex2 24.9
+rindex2 rindex3 20.97
+rindex3 RIndexTip 25.6
+rmiddle1 rmiddle2 27.21
+rmiddle2 rmiddle3 25.0
+rmiddle3 RMiddleTip 26.9
+rring1 rring2 27.21
+rring2 rring3 22.06
+rring3 RRingTip 26.78
+rpinky1 rpinky2 16.22
+rpinky2 rpinky3 15.43
+rpinky3 RPinkyTip 24.62
+rindex1 rpinky1 63.47
+RWristIn RWristOut 55.7

@@ -25,6 +25,7 @@ public class FABRIKHand: FABRIK
         public GameObject ConnectorObject;
         public FABRIKEffector ParentEffector;
         public FABRIKEffector ChildEffector;
+        public GameObject FingerTip = null;
     }
 
 
@@ -86,7 +87,7 @@ public class FABRIKHand: FABRIK
         {
             FABRIKChain chain = GetEndChain("fingertip" + (i + 1) + "_end_effector");
             FABRIKEffector[] effectors = chain.Effectors.ToArray();
-            for (int j = 1; j < effectors.Length - 2; j++)
+            for (int j = 2; j < effectors.Length - 2; j++)
             {
                 FABRIKEffector parent = effectors[j];
                 FABRIKEffector child = effectors[j + 1];
@@ -116,7 +117,38 @@ public class FABRIKHand: FABRIK
                     ChildEffector = child
                 };
                 connectors.Add(connectorInfo);
+
+                if(j == effectors.Length - 3){
+                    //instantiate connector between end and fingertip
+                    GameObject fingertip = FingerTips[i].gameObject;
+                    Vector3 fingertipPosition = fingertip.transform.position;
+                    direction = fingertipPosition - end;
+                    scale = new Vector3(
+                        0.7f,
+                        0.7f,
+                        direction.magnitude * connectorScale);
+                    position = end + direction / 2;
+                    rotation = Quaternion.LookRotation(direction);
+                    connector = Instantiate(ConnectorPrefab);
+                    connector.transform.position = position;
+                    connector.transform.rotation = rotation;
+                    connector.transform.localScale = scale;
+                    connector.transform.parent = child.transform;
+
+                    // Store connector information
+                    connectorInfo = new ConnectorInfo
+                    {
+                        ConnectorObject = connector,
+                        ParentEffector = child,
+                        ChildEffector = null,
+                        FingerTip = fingertip
+                    };
+                    connectors.Add(connectorInfo);
+                    
+                }
+
             }
+
         }
     }
 
@@ -127,7 +159,17 @@ public class FABRIKHand: FABRIK
             FABRIKEffector child = connectorInfo.ChildEffector;
             GameObject connector = connectorInfo.ConnectorObject;
             Vector3 origin = parent.transform.position;
-            Vector3 end = child.transform.position;
+            Vector3 end;
+            if(child!=null)
+                end = child.transform.position;
+            else{
+                end = connectorInfo.FingerTip.transform.position;
+                Vector3 scale = new Vector3(
+                    0.7f,
+                    0.7f,
+                    (end - origin).magnitude * connectorScale);
+                connector.transform.localScale = scale;
+            }
             Vector3 direction = end - origin;
 
             Vector3 position = origin + direction / 2;

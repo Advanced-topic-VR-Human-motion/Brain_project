@@ -8,44 +8,61 @@ using System;
 
 public class MPJPECalculator : MonoBehaviour{
 
+    const string separator = " "; //tab separation string
     public string path; //path to data file
-    public GameObject markerContainer;
+    public GameObject markerContainer; 
     
 
-    private class JointOffset
+    private class JointDistance
     {
         public string startJointName;
         public string endJointName;
-        public Vector3 offset;
+        public float distance;
     }
 
-    private JointOffset[] RealJointOffsets;
-    private JointOffset[] MeasuredJointOffsets;
+    private List<JointDistance> TrueJointDistances;
+    private List<JointDistance> MeasuredJointDistances;
 
+    void Start()
+    {
+        TrueJointDistances = new List<JointDistance>();
+        MeasuredJointDistances = new List<JointDistance>();
+        readStream(path);
+    }
     
-    private StreamReader ReadFile(string path)
-    {
-        StreamReader reader = new StreamReader(path);
-        string line = reader.ReadLine(); //first line = headers
-        return reader;
+    void Update(){
+        MeasureJointDistances();
+        CalculateMPJPE();
     }
 
-        //function to find the total number of lines in the file being read
-    private int FindSize(StreamReader reader)
+    private void readStream(string filepath)
     {
-        int i = 1;
-        string line = reader.ReadLine();
-        while (line != null)
+        // slider.onValueChanged.AddListener(delegate { ChangeSpeed(); });
+
+        BetterStreamingAssets.Initialize();
+        StreamReader sr = null;
+        string streamPath = path.Split('/').Last();
+        if (!BetterStreamingAssets.FileExists(streamPath) )
         {
-            i++;
-            line = reader.ReadLine();
+            Debug.LogErrorFormat("Streaming asset not found: {0}", streamPath);
         }
-        return i;
+        else{
+            sr = BetterStreamingAssets.OpenText(streamPath); //read from file
+        }
+
+
+        //extract and distribute info
+        sr.DiscardBufferedData();
+        sr.BaseStream.Seek(0, SeekOrigin.Begin);
+        ExtractTrueJointData(sr);
+
+        //close reader
+        sr.Close();
     }
 
       //format of lines:
       // startjoint endjoint x y z
-    private void ExtractRealJointData(StreamReader reader)
+    private void ExtractTrueJointData(StreamReader reader)
     {
         string line;
         line = reader.ReadLine(); //first line
@@ -57,12 +74,11 @@ public class MPJPECalculator : MonoBehaviour{
             if(temp.Length < 2)
                 break;
             
-            JointOffset jointOffset = new JointOffset();
-            jointOffset.startJointName = temp[0];
-            jointOffset.endJointName = temp[1];
-            jointOffset.offset = new Vector3(float.Parse(temp[2]), float.Parse(temp[3]), float.Parse(temp[4]));
-            RealJointOffsets.Add(jointOffset);
-
+            JointDistance jointDistance = new JointDistance();
+            jointDistance.startJointName = temp[0];
+            jointDistance.endJointName = temp[1];
+            jointDistance.distance = float.Parse(temp[2]);
+            TrueJointDistances.Add(jointDistance);
             line = reader.ReadLine();
         }
 
@@ -70,21 +86,64 @@ public class MPJPECalculator : MonoBehaviour{
             Debug.Log("End of file reached");
     }
 
-    private void CalculateJointOffsets(){
-        foreach (GameObject marker in markerContainer){
-            string markerName = marker.name;
-            foreach (JointOffset jointOffset in RealJointOffsets){
-                if (markerName == jointOffset.startJointName){
-                    string endMarkerName = jointOffset.endJointName;
-                    GameObject endMarker = markerContainer.Find(endMarkerName);
-                }
+    private void MeasureJointDistances(){
+        foreach (JointDistance trueDistance in TrueJointDistances){
+            string startJointName = trueDistance.startJointName;
+            string endJointName = trueDistance.endJointName;
+            GameObject startMarker = GameObject.Find(startJointName);
+            GameObject endMarker = GameObject.Find(endJointName);
+            float distance = Vector3.Distance(startMarker.transform.position, endMarker.transform.position);
+            if(!UpdateMeasuredDistance(startJointName, endJointName, distance)){
+                JointDistance measuredJointDistance = new JointDistance();
+                measuredJointDistance.startJointName = startJointName;
+                measuredJointDistance.endJointName = endJointName;
+                measuredJointDistance.distance = distance * 1000f;
+                Debug.Log("Measured distance between " + startJointName + " and " + endJointName + ": " + measuredJointDistance.distance);
+                MeasuredJointDistances.Add(measuredJointDistance);
             }
         }
+    }
+
+    private bool UpdateMeasuredDistance(string startJointName, string endJointName, float newDistance){
+        foreach(JointDistance jointDistance in MeasuredJointDistances){
+            if(jointDistance.startJointName == startJointName && jointDistance.endJointName == endJointName){
+                jointDistance.distance = newDistance * 1000f;
+                return true;
+            }
+        }
+        return false;
     }
 
 
     private void CalculateMPJPE(){
 
+        /*
+        the MPJPE is calculated as the mean Euclidean distance between the predicted 3D joint locations and the 
+        corresponding ground truth joint locations. This metric is used to evaluate how accurately the algorithm 
+        is able to predict the 3D pose of a person in an image or video.
+        */
+
+        float MPJPE = 0f;
+        float maxEuclidianDistance = -100f;
+        string startMaxJointName = "", endMaxJointName = "";
+        foreach(JointDistance trueDistance in TrueJointDistances){
+            foreach(JointDistance measuredDistance in MeasuredJointDistances){
+                if (trueDistance.startJointName == measuredDistance.startJointName){
+                    float euclideanDistance = Mathf.Sqrt(Mathf.Pow(trueDistance.distance - measuredDistance.distance, 2));
+                    if(euclideanDistance > maxEuclidianDistance){
+                        maxEuclidianDistance = euclideanDistance;
+                        startMaxJointName = trueDistance.startJointName;
+                        endMaxJointName = trueDistance.endJointName;
+                    }
+                    MPJPE += euclideanDistance;
+                }
+            }
+        }
+        Debug.Log("Max Euclidian Distance: " + maxEuclidianDistance + " between " + startMaxJointName + " and " + endMaxJointName 
+        +" (True distance: " + TrueJointDistances.Find(x => x.startJointName == startMaxJointName && x.endJointName == endMaxJointName).distance + ")" + 
+        " (Measured distance: " + MeasuredJointDistances.Find(x => x.startJointName == startMaxJointName && x.endJointName == endMaxJointName).distance + ")");
+        MPJPE = MPJPE / TrueJointDistances.Count;
+        Debug.Log("MPJPE: " + MPJPE + " mm");
     }
 }
     
