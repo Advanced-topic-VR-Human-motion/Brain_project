@@ -1,0 +1,16 @@
+lthumb1 lthumb2 24.8
+lthumb2 LThumbTip 32.14
+lindex1 lindex2 24.9
+lindex2 lindex3 20.97
+lindex3 LIndexTip 25.6
+lmiddle1 lmiddle2 27.21
+lmiddle2 lmiddle3 25.0
+lmiddle3 LMiddleTip 26.9
+lring1 lring2 27.21
+lring2 lring3 22.06
+lring3 LRingTip 26.78
+lpinky1 lpinky2 16.22
+lpinky2 lpinky3 15.43
+lpinky3 LPinkyTip 24.62
+lindex1 lpinky1 63.47
+LWristIn LWristOut 55.7

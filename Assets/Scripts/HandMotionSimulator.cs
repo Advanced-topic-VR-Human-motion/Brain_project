@@ -16,7 +16,7 @@ public class HandMotionSimulator : MonoBehaviour
 
 
     private float timeToCall;
-    private float timeDelay = 0.00005f;
+    private float timeDelay = 0.00002f;
     const string separator = "\t"; //tab separation string
     private int index, fileSize; //index to cycle through arrays
     private bool readyToUpdate;

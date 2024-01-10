@@ -98,7 +98,6 @@ public class MPJPECalculator : MonoBehaviour{
                 measuredJointDistance.startJointName = startJointName;
                 measuredJointDistance.endJointName = endJointName;
                 measuredJointDistance.distance = distance * 1000f;
-                Debug.Log("Measured distance between " + startJointName + " and " + endJointName + ": " + measuredJointDistance.distance);
                 MeasuredJointDistances.Add(measuredJointDistance);
             }
         }
@@ -129,7 +128,7 @@ public class MPJPECalculator : MonoBehaviour{
         foreach(JointDistance trueDistance in TrueJointDistances){
             foreach(JointDistance measuredDistance in MeasuredJointDistances){
                 if (trueDistance.startJointName == measuredDistance.startJointName){
-                    float euclideanDistance = Mathf.Sqrt(Mathf.Pow(trueDistance.distance - measuredDistance.distance, 2));
+                    float euclideanDistance = Mathf.Abs(trueDistance.distance - measuredDistance.distance);
                     if(euclideanDistance > maxEuclidianDistance){
                         maxEuclidianDistance = euclideanDistance;
                         startMaxJointName = trueDistance.startJointName;
@@ -143,7 +142,7 @@ public class MPJPECalculator : MonoBehaviour{
         +" (True distance: " + TrueJointDistances.Find(x => x.startJointName == startMaxJointName && x.endJointName == endMaxJointName).distance + ")" + 
         " (Measured distance: " + MeasuredJointDistances.Find(x => x.startJointName == startMaxJointName && x.endJointName == endMaxJointName).distance + ")");
         MPJPE = MPJPE / TrueJointDistances.Count;
-        Debug.Log("MPJPE: " + MPJPE + " mm");
+        Debug.LogWarning("MPJPE for "+ path + ": " + MPJPE + " mm");
     }
 }
     
